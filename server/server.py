@@ -18,10 +18,12 @@ server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # setup TCP/IP
 server_ip = "0.0.0.0" # localhost IP address
 server_port = 12439 # 1 + last four student number
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+USERS_FILE = os.path.join(BASE_DIR, "users.txt")
 users_db = {} # dictionary to store userID and password pairs for authentication
 def load_users(): # Only load if it exists; do not create it here.
-    if(os.path.exists("users.txt")):
-        with open("users.txt", "r") as f:
+    if(os.path.exists(USERS_FILE)):
+        with open(USERS_FILE, "r") as f:
             for line in f:
                 clean_line = line.strip().strip('()') # clean line by stripping whitespace and parentheses
                 parts = clean_line.split(',', 1) # split into userID and password
@@ -63,7 +65,7 @@ def newuser(conn, userID, password):
     
     users_db[userID] = password # add to databse
     
-    with open("users.txt", "a") as f: # add user to file for persistence
+    with open(USERS_FILE, "a") as f: # add user to file for persistence
         f.write(f"({userID}, {password})\n")
     print("New user account created") # print new user created
     try: conn.sendall(f"New user account created. Please login.".encode()) # send confirmationto client
@@ -131,7 +133,7 @@ def handle_client(conn):
 
         commandArgs = message # command + arguments in message
 
-        parts = commandArgs.split(" ", 1) # split command from arguments
+        parts = commandArgs.strip().split(" ", 1) # split command from arguments
         command = parts[0] # extract command
         args = parts[1] if len(parts) > 1 else "" # extract arguments if exist
 
